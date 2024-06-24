@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>OpenCV Video Stream</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@300;400&display=swap"
+        rel="stylesheet">
+        <link rel="stylesheet" href="/static/css/style.css">
+        <script src="/static/js/scripts.js"></script>
+</head>
+
+<body>
+    <div class="welcome-screen" id="welcomeScreen">
+        <h1>Welcome to the OpenCV Video Stream</h1>
+        <p>Press Enter to start...</p>
+        <div class="alphabet-container">
+            <div class="alphabet-animation" style="top: 10%;">A</div>
+            <div class="alphabet-animation" style="top: 20%;">B</div>
+            <div class="alphabet-animation" style="top: 30%;">C</div>
+            <div class="alphabet-animation" style="top: 40%;">D</div>
+            <div class="alphabet-animation" style="top: 50%;">E</div>
+            <div class="alphabet-animation" style="top: 60%;">F</div>
+            <div class="alphabet-animation" style="top: 70%;">G</div>
+            <div class="alphabet-animation" style="top: 80%;">H</div>
+            <div class="alphabet-animation" style="top: 90%;">I</div>
+        </div>
+    </div>
+
+    <div class="container hidden" id="mainContent">
+        <div class="left-column">
+            <div class="video-container">
+                <h1>Normal Video Feed</h1>
+                <img id="videoNormal" src="{{ url_for('video_normal') }}" alt="Normal Video" width="320" height="240">
+            </div>
+            <div class="button-container">
+
+                <div>
+                    <label for="language">Choose a language:</label>
+                    <select id="audiolanguage">
+                        <option value="en">English</option>
+                        <option value="af">Afrikaans</option>
+                        <option value="ar">Arabic</option>
+                        <option value="bg">Bulgarian</option>
+                        <option value="bn">Bengali</option>
+                        <option value="bs">Bosnian</option>
+                        <option value="ca">Catalan</option>
+                        <option value="cs">Czech</option>
+                        <option value="da">Danish</option>
+                        <option value="de">German</option>
+                        <option value="el">Greek</option>
+                        <option value="es">Spanish</option>
+                        <option value="et">Estonian</option>
+                        <option value="fi">Finnish</option>
+                        <option value="fr">French</option>
+                        <option value="gu">Gujarati</option>
+                        <option value="hi">Hindi</option>
+                        <option value="hr">Croatian</option>
+                        <option value="hu">Hungarian</option>
+                        <option value="id">Indonesian</option>
+                        <option value="is">Icelandic</option>
+                        <option value="it">Italian</option>
+                        <option value="iw">Hebrew</option>
+                        <option value="ja">Japanese</option>
+                        <option value="jw">Javanese</option>
+                        <option value="km">Khmer</option>
+                        <option value="kn">Kannada</option>
+                        <option value="ko">Korean</option>
+                        <option value="la">Latin</option>
+                        <option value="lv">Latvian</option>
+                        <option value="ml">Malayalam</option>
+                        <option value="mr">Marathi</option>
+                        <option value="ms">Malay</option>
+                        <option value="my">Myanmar (Burmese)</option>
+                        <option value="ne">Nepali</option>
+                        <option value="nl">Dutch</option>
+                        <option value="no">Norwegian</option>
+                        <option value="pl">Polish</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="ro">Romanian</option>
+                        <option value="ru">Russian</option>
+                        <option value="si">Sinhala</option>
+                        <option value="sk">Slovak</option>
+                        <option value="sq">Albanian</option>
+                        <option value="sr">Serbian</option>
+                        <option value="su">Sundanese</option>
+                        <option value="sv">Swedish</option>
+                        <option value="sw">Swahili</option>
+                        <option value="ta">Tamil</option>
+                        <option value="te">Telugu</option>
+                        <option value="th">Thai</option>
+                        <option value="tl">Filipino</option>
+                        <option value="tr">Turkish</option>
+                        <option value="uk">Ukrainian</option>
+                        <option value="ur">Urdu</option>
+                        <option value="vi">Vietnamese</option>
+                        <option value="zh">Chinese (Mandarin)</option>
+                        <option value="zh-CN">Chinese (Simplified)</option>
+                        <option value="zh-TW">Chinese (Mandarin/Taiwan)</option>
+                    </select>
+                    <button onclick="playWordSound()">Play Word Sound</button>
+                </div>
+                <div>
+                    <button onclick="translateText()">Translate</button>
+                </div>
+                <button onclick="describe()">Describe</button>
+            </div>
+        </div>
+        <div class="right-column">
+            <div class="video-container">
+                <h1>MediaPipe Video Feed</h1>
+                <img id="videoMediapipe" src="{{ url_for('video_mediapipe') }}" alt="MediaPipe Video" width="320"
+                    height="240">
+            </div>
+            <div class="output-container">
+                <h1>Output</h1>
+                <div id="displayArea">Stored Classes will appear here</div>
+                <h1>Word Sound Player</h1>
+                <audio id="wordAudio" controls></audio>
+                <p id="translatedText">Translated text will appear here.</p>
+                <img id="searchImage">
+                <pre id="report">Report will appear here.</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function startApplication() {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('mainContent').classList.remove('hidden');
+            document.getElementById('videoNormal').src = "{{ url_for('video_normal') }}";
+            document.getElementById('videoMediapipe').src = "{{ url_for('video_mediapipe') }}";
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.addEventListener('keydown', event => {
+                if (event.key === 'Enter') {
+                    startApplication();
+                } else if (event.key === 'c' || event.key === 'C') {
+                    fetch('/store_class_name', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({})
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            fetch('/get_stored_class_names')
+                                .then(response => response.json())
+                                .then(data => {
+                                    const displayArea = document.getElementById('displayArea');
+                                    const classNames = data.join('');
+                                    displayArea.innerHTML = classNames;
+                                });
+                        })
+                        .catch(error => console.error('Error storing class name:', error));
+                } else if (event.key === 'q' || event.key === 'Q') {
+                    fetch('/clear_stored_class_names', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({})
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            fetch('/get_stored_class_names')
+                                .then(response => response.json())
+                                .then(data => {
+                                    const displayArea = document.getElementById('displayArea');
+                                    const classNames = data.join('');
+                                    displayArea.innerHTML = classNames;
+                                });
+                        })
+                        .catch(error => console.error('Error clearing class names:', error));
+                } else if (event.key === 'Backspace') {
+                    fetch('/backspace', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({})
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            fetch('/get_stored_class_names')
+                                .then(response => response.json())
+                                .then(data => {
+                                    const displayArea = document.getElementById('displayArea');
+                                    const classNames = data.join('');
+                                    displayArea.innerHTML = classNames;
+                                });
+                        })
+                        .catch(error => console.error('Error storing class name:', error));
+                }
+            });
+        });
+
+        function playWordSound() {
+            const languageSelect = document.getElementById('audiolanguage');
+            const selectedLanguage = languageSelect.value;
+            fetch('/play_word', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lang: selectedLanguage }),
+            }).then(response => response.blob())
+                .then(blob => {
+                    var url = URL.createObjectURL(blob);
+                    var audio = document.getElementById('wordAudio');
+                    audio.src = url;
+                    audio.play();
+                });
+        }
+
+        function translateText() {
+            const languageSelect = document.getElementById('audiolanguage');
+            const selectedLanguage = languageSelect.value;
+
+            fetch('/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lang: selectedLanguage }),
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('translatedText').innerText = data.translated;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function describe() {
+            const languageSelect = document.getElementById('audiolanguage');
+            const selectedLanguage = languageSelect.value;
+            fetch('/describe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ lang: selectedLanguage }),
+            }).then(response => response.json())
+                .then(data => {
+                    var imageData = data.image_urls;
+                    var reportData = data.reports;
+
+                    var searchImage = document.getElementById("searchImage");
+                    if (imageData && imageData.trim() !== "") {
+                        searchImage.src = imageData;
+                        searchImage.style.display = "block";
+                    } else {
+                        searchImage.style.display = "none";
+                    }
+
+                    var report = document.getElementById("report");
+                    if (reportData && reportData.trim() !== "") {
+                        report.textContent = reportData;
+                    } else {
+                        report.textContent = "No report available.";
+                    }
+                })
+                .catch(error => console.error('Error describing:', error));
+        }
+
+    </script>
+</body>
+
+</html>
